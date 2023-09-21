@@ -1,5 +1,8 @@
+//compile with sha.c++ in sha-256 folder
+
+
 #include <iostream>
-#include "sha.h++"
+#include "rng.h++"
 using namespace std;
 
 int main(){
