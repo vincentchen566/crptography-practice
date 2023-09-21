@@ -25,16 +25,16 @@ string sha256hash(string message){
 
 
     //create array with message
-    unsigned char * binaryMessage = new unsigned char[totalBytes];
+    uint8_t * binaryMessage = new uint8_t[totalBytes];
 
     for (int i=0; i<message.length(); i++){
         binaryMessage[i] = message[i];
     }
 
     //add padding
-    binaryMessage[message.length()] = (unsigned char) (0b10000000);
+    binaryMessage[message.length()] = (uint8_t) (0b10000000);
     for (int i=1; i<=paddingBytes; i++){
-        binaryMessage[message.length()+i] = (unsigned char) (0b00000000);
+        binaryMessage[message.length()+i] = (uint8_t) (0b00000000);
     }
     
 
@@ -46,7 +46,7 @@ string sha256hash(string message){
    
 
     for (int i=0; i<8; i++){
-        unsigned char lengthToAdd = stringToChar(bitset<8> (messageLengthBinary.substr(8*i, 8), 2).to_string());
+        uint8_t lengthToAdd = stringToChar(bitset<8> (messageLengthBinary.substr(8*i, 8), 2).to_string());
         binaryMessage[totalBytes-8+i] = lengthToAdd;
     }
 
@@ -160,8 +160,8 @@ unsigned int rightRotate(unsigned int toRotate, int n) {
     return (toRotate >> n)|(toRotate << (32 - n));
 }
 
-unsigned char stringToChar(string binaryString){
-    unsigned char value = 0x00;
+uint8_t stringToChar(string binaryString){
+    uint8_t value = 0x00;
     for (int i=0; i<binaryString.length(); i++){
         if (binaryString.substr(i,1)=="0"){
             value*=2;
@@ -169,8 +169,6 @@ unsigned char stringToChar(string binaryString){
             value*=2;
             value+=1;
         }
-
-        
     }
     return value;
 }
