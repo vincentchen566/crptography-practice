@@ -11,7 +11,10 @@ using namespace std;
 
 string sha256hash(string message){
 
-
+    cout << "pre-hash: ";
+    for (int i=0; i<message.length(); i++){
+        cout << (int) message[i] << " ";
+    } cout << endl;
 
     //find length of message and padding
     int messageBytes = message.length()+1;
@@ -31,6 +34,7 @@ string sha256hash(string message){
         binaryMessage[i] = message[i];
     }
 
+    cout << (int) message[0] << endl; 
     //add padding
     binaryMessage[message.length()] = (uint8_t) (0b10000000);
     for (int i=1; i<=paddingBytes; i++){
@@ -50,7 +54,11 @@ string sha256hash(string message){
         binaryMessage[totalBytes-8+i] = lengthToAdd;
     }
 
-    
+    cout << "post-processing: ";
+    for (int i=0; i<totalBytes; i++){
+        cout << (int) binaryMessage[i] << " ";
+    } cout << endl;
+
     //assigning constants for hashing
     unsigned int hashValues [8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0x3c6ef372, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
     unsigned int roundConstants [64] =
@@ -88,6 +96,10 @@ string sha256hash(string message){
             chunkToHash[j] = chunkToHash[j-16] + s0 + chunkToHash[j-7] + s1; //ignore overflow, calculate mod 2^32
         }
 
+        cout << "hashing: ";
+        for (int j = 0; j < 64; j++){
+            cout << chunkToHash[j] << " ";
+        } cout << endl;
         //COMPRESSION - changing hash values
 
         //initializing variables
@@ -127,6 +139,11 @@ string sha256hash(string message){
         hashValues[6] = hashValues[6] + g;
         hashValues[7] = hashValues[7] + h;
 
+        cout << "after round " << i << " :";
+        for (int i=0; i<8; i++){
+            cout << hashValues[i] << " ";
+        }
+        cout << endl;
     }
 
     //concatenate to get final hash

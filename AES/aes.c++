@@ -112,9 +112,6 @@ string encrypt(uint8_t * messageArray, uint32_t * keyArray){
         toReturn += (char) messageArray[i];
     }
 
-    cout<< "encoded message: ";
-    printMessage(messageArray);
-
     return toReturn;
 }
 
@@ -364,8 +361,6 @@ string decrypt(uint8_t * messageArray, uint32_t * keyArray){
     for (int i=0; i<16; i++){
         toReturn += (char) messageArray[i];
     }
-    cout << "decoded message: ";
-    printMessage(messageArray);
     return toReturn;
 }
 

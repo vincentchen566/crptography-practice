@@ -1,90 +1,114 @@
+//compile with aes.c++ and sha.c++
+
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <cmath>
 #include "rng.h++"
 using namespace std;
 
-class GeneratorState{
-    public:
-        unsigned long key;
-        int counter;
-
-        GeneratorState(){
-            key = 0;
-            counter = 0 ;
-        }
-        
-        GeneratorState(unsigned long setKey, int setCounter){
-            key = setKey;
-            counter = setCounter;
-        }
-};
 
 
-class Generator{
-    public:
-        GeneratorState state;
-
-        //initialize generator
-        Generator(){
-            state.key = 0;
-            state.counter = 0;
-        }
-
-        //generates new seed and increments by counter to indicate seeded
-        void reseed(string seed){
-            stringstream res1, res2;
-            res1 << hex << uppercase << state.key;
-            res2 << hex << uppercase << seed;
-
-            stringstream processHash(sha256hash(res1.str() + res2.str()));
-            processHash >> hex >> state.key;
-
-            state.counter += 1;
-        }
 
 
-        //generate psuedorandom string of 16k bytes
-        string generateBlock(Generator generator, unsigned int length){
-            if (generator.state.counter == 0){
-                return "ERROR - COUNTER IS ZERO";
-            }
+       
 
-            string randString = "";
+//generates new seed and increments by counter to indicate seeded
+//convert each byte to string
+void Generator::reseed(string seed){
+    string toHash = "";
+    //add key as chars
 
-            for (int i=0; i<k; i++){
-                r += encrypt(generator.state.key, generator.state.counter);
-                generator.state.counter += 1;
-            }
 
-            return randString;
+
+    for (int i=0; i<8; i++){
+        for (int j=0; j<4; j++){
+            toHash+= (unsigned char) ((state.key[i]>>8*(3-j)) & 0xff);
 
         }
-        
-        string generateData(Generator generator, unsigned int wantedLength){
-            if (wantedLength > pow(2,20)){
-                return "ERROR - TOO LONG";
-            }
+    }
 
-            string r = generateBlock(generator, ceil((double) wantedLength/16));
-            while (r.length() > wantedLength){
-                r = r.substr(0, r.length()-1);
-            }
-
-
-            //change keys
-            stringstream processKey(generateBlock(generator, 2));
-            processKey >> hex >> generator.state.key;
-            
-            return r;
+    
+    for (int i=0; i<seed.length(); i++){
+        toHash+= (unsigned char) seed[i];
+    }
+    cout << toHash << endl;
+    string keyString = sha256hash(toHash);
+    cout << keyString << endl;
+    string specKeyString;
+    
+    for (int i=0; i<8; i++){
+        specKeyString = keyString.substr(4*i, 4);
+        state.key[i] = 0;
+        //convert hash to uint32 array and store as key
+        for (int j=0; j<4; j++){
+            state.key[i] << 8;
+            state.key[i] += (uint32_t) specKeyString[j];
         }
 
-};
+    }
+    state.counter += 1;
 
-GeneratorState initialize(Generator generator){
-    generator.state.key = 0;
-    generator.state.counter = 0;
-    return generator.state;
+    for (int i=0; i<8; i++){
+        cout << state.key[0];
+    }
+    //for (int i=0; i<8; i++){
+    //    cout << state.key[i] + " ";
+    //}
+}
+
+
+//generate psuedorandom string of 16k bytes
+string Generator::generateBlock(unsigned int length){
+    if (state.counter == 0){
+        return "ERROR - COUNTER IS ZERO - reseed first";
+    }
+
+    string randString = "";
+
+    uint8_t counterArray[16];
+
+    for (int i=0; i<length; i++){
+
+        for (int j=0; j<16; j++){
+            counterArray[j] = (state.counter >> (8*(15-j))) & 0xff;
+        }
+
+        randString += encrypt(counterArray, state.key);
+        state.counter += 1;
+    }
+
+    return randString;
+}
+
+string Generator::generateData(unsigned int wantedLength){
+    if (wantedLength > pow(2,20)){
+        return "ERROR - TOO LONG";
+    }
+
+    string r = generateBlock(ceil((double) wantedLength/16));
+    while (r.length() > wantedLength){
+        r = r.substr(0, r.length()-1);
+    }
+
+
+    //change keys
+    string keyString = generateBlock(2);
+    string specKeyString;
+    
+    for (int i=0; i<8; i++){
+        specKeyString = keyString.substr(4*i, 4);
+        state.key[i] = 0;
+        //convert hash to uint32 array and store as key
+        for (int j=0; j<4; j++){
+            state.key[i] << 8;
+            state.key[i] += (uint32_t) specKeyString[j];
+        }
+
+    }
+    state.counter += 1;
+    
+    return r;
 }
 

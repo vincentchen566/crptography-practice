@@ -6,9 +6,13 @@
 using namespace std;
 
 int main(){
-    
+
     //change to hash different message
-    cout << sha256hash("hello");
+    string seed = "a really good seed";
+    Generator generator;
+    generator.reseed(seed);
+    //cout << generator.generateBlock(2);
+
 
     return 0;
 }
