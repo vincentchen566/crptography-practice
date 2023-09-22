@@ -1,3 +1,5 @@
+//CHANGE BACK DECRYPTION KEY TO NROMAL
+
 #include <iostream>
 #include <bitset>
 #include "aes.h++"
@@ -75,7 +77,8 @@ string encrypt(uint8_t * messageArray, uint32_t * keyArray){
         0x5b,0x58,0x5d,0x5e,0x57,0x54,0x51,0x52,0x43,0x40,0x45,0x46,0x4f,0x4c,0x49,0x4a,
         0x6b,0x68,0x6d,0x6e,0x67,0x64,0x61,0x62,0x73,0x70,0x75,0x76,0x7f,0x7c,0x79,0x7a,	
         0x3b,0x38,0x3d,0x3e,0x37,0x34,0x31,0x32,0x23,0x20,0x25,0x26,0x2f,0x2c,0x29,0x2a,
-        0x0b,0x08,0x0d,0x0e,0x07,0x04,0x01,0x02,0x13,0x10,0x15,0x16,0x1f,0x1c,0x19,0x1a};
+        0x0b,0x08,0x0d,0x0e,0x07,0x04,0x01,0x02,0x13,0x10,0x15,0x16,0x1f,0x1c,0x19,0x1a
+    };
 
 
     //xor messageArray with first key
@@ -84,7 +87,6 @@ string encrypt(uint8_t * messageArray, uint32_t * keyArray){
             messageArray[4*i + j] = messageArray[4*i + j] ^ ((keySchedule[i] >> 8*(3-j)) & 0xff);
         }
     }
-    
     //14 rounds of encryption
     for (int i=0; i<14; i++){
 
@@ -95,23 +97,24 @@ string encrypt(uint8_t * messageArray, uint32_t * keyArray){
 
         //shift rows
         shuffle(messageArray);
-
         //mix columns
         columnEncrypt(messageArray, galoisBy2, galoisBy3);
-        
         //add round key
         for (int j=0; j<4; j++){
             for (int k=0; k<4; k++){
-                messageArray[4*j + k] = messageArray[4*j + 1] ^ (keySchedule[4*i+j] >> 8*(3-k));//key
+                messageArray[4*j + k] = messageArray[4*j + k] ^ (keySchedule[4*i+4+j] >> 8*(3-k));//key
             }
         }
-
     }
 
     string toReturn = "";
     for (int i=0; i<16; i++){
         toReturn += (char) messageArray[i];
     }
+
+    cout<< "encoded message: ";
+    printMessage(messageArray);
+
     return toReturn;
 }
 
@@ -179,7 +182,7 @@ uint32_t sub32Bit(uint32_t subWord, uint8_t * sbox){
     return toReturn;
 }
 
-//right rotate 32-bit word 1 byte
+//left rotate 32-bit word 1 byte
 uint32_t rotateWord(uint32_t toRotate){
     return (toRotate << 8) + (toRotate >> 24);
 }
@@ -187,7 +190,7 @@ uint32_t rotateWord(uint32_t toRotate){
 
 //shift rows of message
 void shuffle(uint8_t * message){
-    int temp;
+    uint8_t temp;
     //second row
     temp = message[1];
     message[1] = message[5];
@@ -240,9 +243,12 @@ string decrypt(uint8_t * messageArray, uint32_t * keyArray){
     uint8_t invsbox [256];
     initializeInvSbox(invsbox);
 
+    uint8_t sbox [256];
+    initializeSbox(sbox);
+
     //initialize keyschedule
     uint32_t keySchedule[60];
-    initializeKeyschedule(keySchedule, keyArray, invsbox);
+    initializeKeyschedule(keySchedule, keyArray, sbox);
     reverseKey(keySchedule);
 
 
@@ -331,24 +337,24 @@ string decrypt(uint8_t * messageArray, uint32_t * keyArray){
         }
     }
     
-    //14 rounds of encryption
+
+    //14 rounds of decryption
     for (int i=0; i<14; i++){
 
         //mix columns
         columnDecrypt(messageArray, galoisBy9, galoisBy11, galoisBy13, galoisBy14);
-
+        
         //shift rows
         invShuffle(messageArray);
-
         //substitute bytes
         for (int j = 0; j < 16; j++){
             messageArray[j] = invsbox[messageArray[j]];
         }
-        
+
         //add round key
         for (int j=0; j<4; j++){
             for (int k=0; k<4; k++){
-                messageArray[4*j + k] = messageArray[4*j + 1] ^ (keySchedule[4*i+j] >> 8*(3-k));//key
+                messageArray[4*j + k] = messageArray[4*j + k] ^ (keySchedule[4*i+4+j] >> 8*(3-k));//key //CAHANGE BACK TO 4*i+j LATEr
             }
         }
 
@@ -358,6 +364,8 @@ string decrypt(uint8_t * messageArray, uint32_t * keyArray){
     for (int i=0; i<16; i++){
         toReturn += (char) messageArray[i];
     }
+    cout << "decoded message: ";
+    printMessage(messageArray);
     return toReturn;
 }
 
@@ -410,9 +418,9 @@ void invShuffle(uint8_t * message){
     int temp;
     //second row
     temp = message[13];
-    message[5] = message[1];
-    message[9] = message[5];
     message[13] = message[9];
+    message[9] = message[5];
+    message[5] = message[1];    
     message[1] = temp;
 
     //third row
@@ -426,8 +434,15 @@ void invShuffle(uint8_t * message){
 
     //fourth row
     temp = message[7];
-    message[15] = message[3];
-    message[11] = message[15];
     message[7] = message[11];
+    message[11] = message[15];
+    message[15] = message[3];
     message[3] = temp;
+}
+
+void printMessage(uint8_t * messageArray){
+    for (int i=0; i<16; i++){
+        cout << messageArray[i];
+    }
+    cout << endl;
 }

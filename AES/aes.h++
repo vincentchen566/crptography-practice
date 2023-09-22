@@ -20,3 +20,4 @@ void initializeInvSbox(uint8_t * invsbox);
 void reverseKey(uint32_t * keySchedule);
 void columnDecrypt(uint8_t * messageArray, uint8_t * galoisBy9, uint8_t * galoisBy11, uint8_t * galoisBy13, uint8_t * galoisBy14);
 void invShuffle(uint8_t * message);
+void printMessage(uint8_t * messageArray);
