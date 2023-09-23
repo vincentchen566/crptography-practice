@@ -46,3 +46,5 @@ class Generator{
         string generateBlock(unsigned int length);
         string generateData(unsigned int wantedLength);
 };
+
+uint32_t charToInt(char hexChar);

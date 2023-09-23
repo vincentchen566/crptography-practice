@@ -8,10 +8,11 @@ using namespace std;
 int main(){
 
     //change to hash different message
+    //outputs random string
     string seed = "a really good seed";
     Generator generator;
     generator.reseed(seed);
-    //cout << generator.generateBlock(2);
+    cout << generator.generateBlock(2);
 
 
     return 0;
