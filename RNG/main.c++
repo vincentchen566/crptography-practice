@@ -8,7 +8,7 @@ using namespace std;
 int main(){
 
     //change to hash different message
-    //outputs random string
+    //outputs pseudorandom string based on seed
     string seed = "a really good seed";
     Generator generator;
     generator.reseed(seed);
